@@ -13,7 +13,7 @@ namespace Hometask1
         private static readonly Regex Regex;
         static List<(string Pattern, Func<string, Token> ToToken)> Patterns = new()
         {
-            ("\\d+(\\.\\d+?(e{+-?\\d+?)", match => new Number (double.Parse(match))),
+            ("\\d+(\\.\\d+)?(e[+-]?\\d+?)", match => new Number (double.Parse(match))),
 
             ("(?<=[\\d|)]\\s*)-", _ => new BinaryOperation((x, y) => x - y, 1)),
             ("\\+", _ => new BinaryOperation((x, y) => x + y, 1)),
@@ -26,7 +26,7 @@ namespace Hometask1
             ("\\(", _ => new LeftParenthesis()),
             ("\\)", _ => new RightParenthesis()),
 
-            ("\\S", _ => throw new Exception("unknown symbol")),
+            //("\\S", _ => throw new Exception("unknown symbol")),
         };
 
         static Tokenizer ()
@@ -41,10 +41,10 @@ namespace Hometask1
         {
             var tokens  = Regex 
                 .Matches (expression)
-                .Select(match => match.Groups.Values.Last(gr=>gr.Success))
+                .Select(match => match.Groups.Values.Last(gr => gr.Success))
                 .Select(gr =>
                 {
-                    var indexStr = gr.Name.Substring("name_".Length);
+                    var indexStr = gr.Name.Substring("name_" .Length);
                     var index = int.Parse(indexStr);
                     return Patterns[index].ToToken(gr.Value);
                 })
@@ -82,7 +82,7 @@ namespace Hometask1
 
     record BinaryOperation(Func<double, double, double> Calculate, int? Priority, 
             bool RightAssoiciative = false)
-                : Operation (Priority);
+                : Operation (Priority, RightAssoiciative);
 
     record UnaryOperation(Func<double, double> Calculate, int? Priority)
         :Operation (Priority, RightAssoiciative:true);
